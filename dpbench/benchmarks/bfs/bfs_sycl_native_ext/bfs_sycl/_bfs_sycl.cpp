@@ -33,9 +33,6 @@ int no_of_nodes;
 int edge_list_size;
 FILE *fp;
 
-#include "kernel.dp.cpp"
-#include "kernel2.dp.cpp"
-
 void BFSGraph(int argc, char **argv);
 
 ////////////////////////////////////////////////////////////////////////////////
