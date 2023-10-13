@@ -15,19 +15,11 @@
 
   Created by Pawan Harish.
  ************************************************************************************/
-#include <CL/sycl.hpp>
-#include <dpct/dpct.hpp>
+#include "_bfs_kernel.hpp"
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-// #include <cuda.h>
-#include "../common.hpp"
-#include "bfs.hpp"
-
-#ifdef TIME_IT
-#include <sys/time.h>
-#endif
 
 int no_of_nodes;
 int edge_list_size;
@@ -45,21 +37,6 @@ int main(int argc, char **argv)
     BFSGraph(argc, argv);
 }
 
-void Usage(int argc, char **argv)
-{
-
-    fprintf(stderr, "Usage: %s <input_file>\n", argv[0]);
-}
-
-#ifdef TIME_IT
-long long get_time()
-{
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    return (tv.tv_sec * 1000000) + tv.tv_usec;
-}
-#endif
-
 ////////////////////////////////////////////////////////////////////////////////
 // Apply BFS on a Graph using CUDA
 ////////////////////////////////////////////////////////////////////////////////
@@ -67,15 +44,6 @@ void BFSGraph(int argc, char **argv)
 {
     // dpct::device_ext &dev_ct1 = dpct::get_current_device();
     // sycl::queue &q_ct1 = dev_ct1.default_queue();
-#ifdef TIME_IT
-    long long time0;
-    long long time1;
-    long long time2;
-    long long time3;
-    long long time4;
-    long long time5;
-    long long time6;
-#endif
 
     char *input_f;
     if (argc != 2) {
@@ -92,27 +60,7 @@ void BFSGraph(int argc, char **argv)
         return;
     }
 
-#ifdef TIME_IT
-    time0 = get_time();
-#endif
-
-#ifdef NVIDIA_GPU
-    NvidiaGpuSelector selector{};
-#elif INTEL_GPU
-    IntelGpuSelector selector{};
-#else
-    sycl::cpu_selector selector{};
-#endif
-
     sycl::queue q_ct1{selector};
-
-#ifdef TIME_IT
-    time1 = get_time();
-#endif
-
-    std::cout << "Running on "
-              << q_ct1.get_device().get_info<sycl::info::device::name>()
-              << std::endl;
 
     int source = 0;
 
@@ -169,8 +117,6 @@ void BFSGraph(int argc, char **argv)
     if (fp)
         fclose(fp);
 
-    printf("Read File\n");
-
     Node *d_graph_nodes;
     int *d_graph_edges;
     bool *d_graph_mask;
@@ -200,10 +146,6 @@ void BFSGraph(int argc, char **argv)
     // make a bool to check if the execution is over
     d_over = sycl::malloc_device<bool>(1, q_ct1);
 
-#ifdef TIME_IT
-    time2 = get_time();
-#endif
-
     // Copy the Node list to device memory
     q_ct1.memcpy(d_graph_nodes, h_graph_nodes, sizeof(Node) * no_of_nodes)
         .wait();
@@ -226,13 +168,6 @@ void BFSGraph(int argc, char **argv)
 
     q_ct1.memcpy(d_cost, h_cost, sizeof(int) * no_of_nodes).wait();
 
-#ifdef TIME_IT
-    time3 = get_time();
-#else
-    printf("Copied Everything to GPU memory\n");
-
-    printf("Start traversing the tree\n");
-#endif
     bool stop;
     // Call the Kernel untill all the elements of Frontier are not false
     do {
@@ -281,28 +216,16 @@ void BFSGraph(int argc, char **argv)
         k++;
     } while (stop);
 
-#ifdef TIME_IT
-    time4 = get_time();
-#else
-    printf("Kernel Executed %d times\n", k);
-#endif
     // copy result from device to host
     q_ct1.memcpy(h_cost, d_cost, sizeof(int) * no_of_nodes).wait();
+    f
 
-#ifdef TIME_IT
-    time5 = get_time();
-#endif
-
-    sycl::free(d_graph_nodes, q_ct1);
+        sycl::free(d_graph_nodes, q_ct1);
     sycl::free(d_graph_edges, q_ct1);
     sycl::free(d_graph_mask, q_ct1);
     sycl::free(d_updating_graph_mask, q_ct1);
     sycl::free(d_graph_visited, q_ct1);
     sycl::free(d_cost, q_ct1);
-
-#ifdef TIME_IT
-    time6 = get_time();
-#endif
 
     // Store the result into a file
     FILE *fpo = fopen("result.txt", "w");
@@ -318,32 +241,4 @@ void BFSGraph(int argc, char **argv)
     free(h_updating_graph_mask);
     free(h_graph_visited);
     free(h_cost);
-
-#ifdef TIME_IT
-    printf("Time spent in different stages of GPU_CUDA KERNEL:\n");
-
-    printf("%15.12f s, %15.12f % : GPU: SET DEVICE / DRIVER INIT\n",
-           (float)(time1 - time0) / 1000000,
-           (float)(time1 - time0) / (float)(time6 - time0) * 100);
-    printf("%15.12f s, %15.12f % : GPU MEM: ALO\n",
-           (float)(time2 - time1) / 1000000,
-           (float)(time2 - time1) / (float)(time6 - time0) * 100);
-    printf("%15.12f s, %15.12f % : GPU MEM: COPY IN\n",
-           (float)(time3 - time2) / 1000000,
-           (float)(time3 - time2) / (float)(time6 - time0) * 100);
-
-    printf("%15.12f s, %15.12f % : GPU: KERNEL\n",
-           (float)(time4 - time3) / 1000000,
-           (float)(time4 - time3) / (float)(time6 - time0) * 100);
-
-    printf("%15.12f s, %15.12f % : GPU MEM: COPY OUT\n",
-           (float)(time5 - time4) / 1000000,
-           (float)(time5 - time4) / (float)(time6 - time0) * 100);
-    printf("%15.12f s, %15.12f % : GPU MEM: FRE\n",
-           (float)(time6 - time5) / 1000000,
-           (float)(time6 - time5) / (float)(time6 - time0) * 100);
-
-    printf("Total time:\n");
-    printf("%.12f s\n", (float)(time6 - time0) / 1000000);
-#endif
 }
