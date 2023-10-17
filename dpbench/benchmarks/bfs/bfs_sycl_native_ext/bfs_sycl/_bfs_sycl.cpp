@@ -1,21 +1,9 @@
-/***********************************************************************************
-  Implementing Breadth first search on CUDA using algorithm given in HiPC'07
-  paper "Accelerating Large Graph Algorithms on the GPU using CUDA"
+// SPDX-FileCopyrightText: 2022 - 2023 Intel Corporation
+//
+// SPDX-License-Identifier: Apache-2.0
 
-  Copyright (c) 2008 International Institute of Information Technology -
- Hyderabad. All rights reserved.
-
-  Permission to use, copy, modify and distribute this software and its
- documentation for educational purpose is hereby granted without fee, provided
- that the above copyright notice and this permission notice appear in all copies
- of this software and that you do not sell the software.
-
-  THE SOFTWARE IS PROVIDED "AS IS" AND WITHOUT WARRANTY OF ANY KIND,EXPRESS,
- IMPLIED OR OTHERWISE.
-
-  Created by Pawan Harish.
- ************************************************************************************/
 #include "_bfs_kernel.hpp"
+#include <dpctl4pybind11.hpp>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,48 +11,12 @@
 
 int no_of_nodes;
 int edge_list_size;
-FILE *fp;
 
-void BFSGraph(int argc, char **argv);
-
-////////////////////////////////////////////////////////////////////////////////
-// Main Program
-////////////////////////////////////////////////////////////////////////////////
-int main(int argc, char **argv)
+void BFSGraph()
 {
-    no_of_nodes = 0;
-    edge_list_size = 0;
-    BFSGraph(argc, argv);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Apply BFS on a Graph using CUDA
-////////////////////////////////////////////////////////////////////////////////
-void BFSGraph(int argc, char **argv)
-{
-    // dpct::device_ext &dev_ct1 = dpct::get_current_device();
-    // sycl::queue &q_ct1 = dev_ct1.default_queue();
-
-    char *input_f;
-    if (argc != 2) {
-        Usage(argc, argv);
-        exit(0);
-    }
-
-    input_f = argv[1];
-    printf("Reading File\n");
-    // Read in Graph from a file
-    fp = fopen(input_f, "r");
-    if (!fp) {
-        printf("Error Reading graph file\n");
-        return;
-    }
-
     sycl::queue q_ct1{selector};
 
     int source = 0;
-
-    fscanf(fp, "%d", &no_of_nodes);
 
     int num_of_blocks = 1;
     int num_of_threads_per_block = no_of_nodes;
@@ -86,25 +38,11 @@ void BFSGraph(int argc, char **argv)
     bool *h_graph_visited = (bool *)malloc(sizeof(bool) * no_of_nodes);
 
     int start, edgeno;
-    // initalize the memory
-    for (unsigned int i = 0; i < no_of_nodes; i++) {
-        fscanf(fp, "%d %d", &start, &edgeno);
-        h_graph_nodes[i].starting = start;
-        h_graph_nodes[i].no_of_edges = edgeno;
-        h_graph_mask[i] = false;
-        h_updating_graph_mask[i] = false;
-        h_graph_visited[i] = false;
-    }
-
-    // read the source node from the file
-    fscanf(fp, "%d", &source);
     source = 0;
 
     // set the source node as true in the mask
     h_graph_mask[source] = true;
     h_graph_visited[source] = true;
-
-    fscanf(fp, "%d", &edge_list_size);
 
     int id, cost;
     int *h_graph_edges = (int *)malloc(sizeof(int) * edge_list_size);
@@ -113,9 +51,6 @@ void BFSGraph(int argc, char **argv)
         fscanf(fp, "%d", &cost);
         h_graph_edges[i] = id;
     }
-
-    if (fp)
-        fclose(fp);
 
     Node *d_graph_nodes;
     int *d_graph_edges;
@@ -241,4 +176,14 @@ void BFSGraph(int argc, char **argv)
     free(h_updating_graph_mask);
     free(h_graph_visited);
     free(h_cost);
+}
+
+PYBIND11_MODULE(_bfs_sycl, m)
+{
+    // Import the dpctl extensions
+    import_dpctl();
+
+    m.def("bfs", &bfs_sync, "DPC++ implementation of the pathfinder",
+          py::arg("data"), py::arg("rows"), py::arg("cols"),
+          py::arg("pyramid_height"), py::arg("result"));
 }
