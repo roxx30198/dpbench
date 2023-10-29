@@ -1,0 +1,62 @@
+# SPDX-FileCopyrightText: 2022 - 2023 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+[benchmark]
+name = "Needleman-wunsch Algorithm"
+short_name = "Needleman-wunsch"
+relative_path = "needleman-wunsch"
+module_name = "needleman-wunsch"
+func_name = "needleman-wunsch"
+kind = "microbenchmark"
+domain = "Sequence Matching"
+input_args = [
+    "X1",
+    "X2",
+    "D",
+]
+array_args = [
+    "X1",
+    "X2",
+    "D",
+]
+output_args = [
+    "D",
+]
+expected_failure_implementations = ["numba_dpex_n"]
+
+[benchmark.parameters.S]
+npoints = 1024
+dims = 3
+seed = 7777777
+
+[benchmark.parameters.M16Gb]
+npoints = 21846
+dims = 3
+seed = 7777777
+
+[benchmark.parameters.M]
+npoints = 32768
+dims = 3
+seed = 7777777
+
+[benchmark.parameters.L]
+npoints = 65536
+dims = 3
+seed = 7777777
+
+[benchmark.init]
+func_name = "initialize"
+types_dict_name="types_dict"
+precision="double"
+input_args = [
+    "npoints",
+    "dims",
+    "seed",
+    "types_dict",
+]
+output_args = [
+    "X1",
+    "X2",
+    "D",
+]
