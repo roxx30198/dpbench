@@ -57,7 +57,7 @@ void nw_sync(dpctl::tensor::usm_ndarray input_itemsets,
     auto reference_value = reference.get_data<int>();
     auto result_value = result.get_data<int>();
 
-    for (int i = 1; i <= block_width; i++) {
+    for (int i = 0; i <= block_width; i++) {
         dimGrid[2] = i;
         dimGrid[1] = 1;
 
@@ -79,6 +79,7 @@ void nw_sync(dpctl::tensor::usm_ndarray input_itemsets,
     }
     // process bottom-right matrix
     for (int i = block_width - 1; i >= 1; i--) {
+
         dimGrid[2] = i;
         dimGrid[1] = 1;
 
@@ -148,7 +149,6 @@ void nw_sync(dpctl::tensor::usm_ndarray input_itemsets,
             continue;
         }
     }
-    std::cout << "Inside 3\n";
     for (int i = 0; i < 16; i++)
         std::cout << result_value[i] << " ";
 }
