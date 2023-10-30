@@ -2,6 +2,6 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-from .nw_sycl._gaussian_sycl import nw as nw_sycl
+from .nw_sycl._nw_sycl import nw as nw_sycl
 
 __all__ = ["nw_sycl"]

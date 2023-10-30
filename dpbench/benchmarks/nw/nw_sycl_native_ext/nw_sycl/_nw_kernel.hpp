@@ -5,14 +5,12 @@
 #include <CL/sycl.hpp>
 #include <math.h>
 #include <stdlib.h>
-#include <string.h>
 
 #define BLOCK_SIZE 16
 #define LIMIT -999
 
 int maximum(int a, int b, int c)
 {
-
     int k;
     if (a <= b)
         k = b;
@@ -25,15 +23,15 @@ int maximum(int a, int b, int c)
         return (k);
 }
 
-void needle_cuda_shared_1(int *referrence,
-                          int *matrix_cuda,
-                          int cols,
-                          int penalty,
-                          int i,
-                          int block_width,
-                          sycl::nd_item<3> item_ct1,
-                          sycl::local_accessor<int, 2> temp,
-                          sycl::local_accessor<int, 2> ref)
+void needle_device_shared_1(int *reference,
+                            int *matrix_device,
+                            int cols,
+                            int penalty,
+                            int i,
+                            int block_width,
+                            sycl::nd_item<3> item_ct1,
+                            sycl::local_accessor<int, 2> temp,
+                            sycl::local_accessor<int, 2> ref)
 {
     int bx = item_ct1.get_group(2);
     int tx = item_ct1.get_local_id(2);
@@ -50,18 +48,18 @@ void needle_cuda_shared_1(int *referrence,
     int index_nw = cols * BLOCK_SIZE * b_index_y + BLOCK_SIZE * b_index_x;
 
     if (tx == 0)
-        temp[tx][0] = matrix_cuda[index_nw];
+        temp[tx][0] = matrix_device[index_nw];
 
     for (int ty = 0; ty < BLOCK_SIZE; ty++)
-        ref[ty][tx] = referrence[index + cols * ty];
+        ref[ty][tx] = reference[index + cols * ty];
 
     item_ct1.barrier();
 
-    temp[tx + 1][0] = matrix_cuda[index_w + cols * tx];
+    temp[tx + 1][0] = matrix_device[index_w + cols * tx];
 
     item_ct1.barrier();
 
-    temp[0][tx + 1] = matrix_cuda[index_n];
+    temp[0][tx + 1] = matrix_device[index_n];
 
     item_ct1.barrier();
 
@@ -100,18 +98,18 @@ void needle_cuda_shared_1(int *referrence,
     }
 
     for (int ty = 0; ty < BLOCK_SIZE; ty++)
-        matrix_cuda[index + ty * cols] = temp[ty + 1][tx + 1];
+        matrix_device[index + ty * cols] = temp[ty + 1][tx + 1];
 }
 
-void needle_cuda_shared_2(int *referrence,
-                          int *matrix_cuda,
-                          int cols,
-                          int penalty,
-                          int i,
-                          int block_width,
-                          sycl::nd_item<3> item_ct1,
-                          sycl::local_accessor<int, 2> temp,
-                          sycl::local_accessor<int, 2> ref)
+void needle_device_shared_2(int *reference,
+                            int *matrix_device,
+                            int cols,
+                            int penalty,
+                            int i,
+                            int block_width,
+                            sycl::nd_item<3> item_ct1,
+                            sycl::local_accessor<int, 2> temp,
+                            sycl::local_accessor<int, 2> ref)
 {
 
     int bx = item_ct1.get_group(2);
@@ -129,18 +127,18 @@ void needle_cuda_shared_2(int *referrence,
     int index_nw = cols * BLOCK_SIZE * b_index_y + BLOCK_SIZE * b_index_x;
 
     for (int ty = 0; ty < BLOCK_SIZE; ty++)
-        ref[ty][tx] = referrence[index + cols * ty];
+        ref[ty][tx] = reference[index + cols * ty];
 
     item_ct1.barrier();
 
     if (tx == 0)
-        temp[tx][0] = matrix_cuda[index_nw];
+        temp[tx][0] = matrix_device[index_nw];
 
-    temp[tx + 1][0] = matrix_cuda[index_w + cols * tx];
+    temp[tx + 1][0] = matrix_device[index_w + cols * tx];
 
     item_ct1.barrier();
 
-    temp[0][tx + 1] = matrix_cuda[index_n];
+    temp[0][tx + 1] = matrix_device[index_n];
 
     item_ct1.barrier();
 
@@ -171,5 +169,5 @@ void needle_cuda_shared_2(int *referrence,
     }
 
     for (int ty = 0; ty < BLOCK_SIZE; ty++)
-        matrix_cuda[index + ty * cols] = temp[ty + 1][tx + 1];
+        matrix_device[index + ty * cols] = temp[ty + 1][tx + 1];
 }

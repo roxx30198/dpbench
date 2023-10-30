@@ -4,59 +4,63 @@
 
 [benchmark]
 name = "Needleman-wunsch Algorithm"
-short_name = "Needleman-wunsch"
-relative_path = "needleman-wunsch"
-module_name = "needleman-wunsch"
-func_name = "needleman-wunsch"
+short_name = "nw"
+relative_path = "nw"
+module_name = "nw"
+func_name = "nw"
 kind = "microbenchmark"
 domain = "Sequence Matching"
 input_args = [
-    "X1",
-    "X2",
-    "D",
+    "input_itemsets",
+    "reference",
+    "max_rows",
+    "max_cols",
+    "penalty",
+    "result"
 ]
 array_args = [
-    "X1",
-    "X2",
-    "D",
+    "input_itemsets",
+    "reference",
+    "result",
 ]
 output_args = [
-    "D",
+    "result",
 ]
-expected_failure_implementations = ["numba_dpex_n"]
 
 [benchmark.parameters.S]
-npoints = 1024
-dims = 3
-seed = 7777777
+grid_size = 16
+penalty = 3
+seed = 7
 
 [benchmark.parameters.M16Gb]
-npoints = 21846
-dims = 3
-seed = 7777777
+grid_size = 1024
+penalty = 3
+seed = 7
 
 [benchmark.parameters.M]
-npoints = 32768
-dims = 3
-seed = 7777777
+grid_size = 1024
+penalty = 3
+seed = 7
 
 [benchmark.parameters.L]
-npoints = 65536
-dims = 3
-seed = 7777777
+grid_size = 1024
+penalty = 3
+seed = 7
 
 [benchmark.init]
 func_name = "initialize"
 types_dict_name="types_dict"
 precision="double"
 input_args = [
-    "npoints",
-    "dims",
+    "grid_size",
+    "penalty",
     "seed",
     "types_dict",
 ]
 output_args = [
-    "X1",
-    "X2",
-    "D",
+    "input_itemsets",
+    "reference",
+    "max_rows",
+    "max_cols",
+    "result"
 ]

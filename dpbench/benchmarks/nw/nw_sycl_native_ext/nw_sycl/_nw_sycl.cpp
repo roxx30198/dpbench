@@ -3,125 +3,59 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "_nw_kernel.hpp"
+#include <dpctl4pybind11.hpp>
 
-#define SDATA(index)
-
-void runTest(int argc, char **argv);
-
-int blosum62[24][24] = {{4,  -1, -2, -2, 0, -1, -1, 0, -2, -1, -1, -1,
-                         -1, -2, -1, 1,  0, -3, -2, 0, -2, -1, 0,  -4},
-                        {-1, 5,  0,  -2, -3, 1,  0,  -2, 0,  -3, -2, 2,
-                         -1, -3, -2, -1, -1, -3, -2, -3, -1, 0,  -1, -4},
-                        {-2, 0,  6,  1, -3, 0,  0,  0,  1, -3, -3, 0,
-                         -2, -3, -2, 1, 0,  -4, -2, -3, 3, 0,  -1, -4},
-                        {-2, -2, 1,  6, -3, 0,  2,  -1, -1, -3, -4, -1,
-                         -3, -3, -1, 0, -1, -4, -3, -3, 4,  1,  -1, -4},
-                        {0,  -3, -3, -3, 9,  -3, -4, -3, -3, -1, -1, -3,
-                         -1, -2, -3, -1, -1, -2, -2, -1, -3, -3, -2, -4},
-                        {-1, 1,  0,  0, -3, 5,  2,  -2, 0, -3, -2, 1,
-                         0,  -3, -1, 0, -1, -2, -1, -2, 0, 3,  -1, -4},
-                        {-1, 0,  0,  2, -4, 2,  5,  -2, 0, -3, -3, 1,
-                         -2, -3, -1, 0, -1, -3, -2, -2, 1, 4,  -1, -4},
-                        {0,  -2, 0,  -1, -3, -2, -2, 6,  -2, -4, -4, -2,
-                         -3, -3, -2, 0,  -2, -2, -3, -3, -1, -2, -1, -4},
-                        {-2, 0,  1,  -1, -3, 0,  0, -2, 8, -3, -3, -1,
-                         -2, -1, -2, -1, -2, -2, 2, -3, 0, 0,  -1, -4},
-                        {-1, -3, -3, -3, -1, -3, -3, -4, -3, 4,  2,  -3,
-                         1,  0,  -3, -2, -1, -3, -1, 3,  -3, -3, -1, -4},
-                        {-1, -2, -3, -4, -1, -2, -3, -4, -3, 2,  4,  -2,
-                         2,  0,  -3, -2, -1, -2, -1, 1,  -4, -3, -1, -4},
-                        {-1, 2,  0,  -1, -3, 1,  1,  -2, -1, -3, -2, 5,
-                         -1, -3, -1, 0,  -1, -3, -2, -2, 0,  1,  -1, -4},
-                        {-1, -1, -2, -3, -1, 0,  -2, -3, -2, 1,  2,  -1,
-                         5,  0,  -2, -1, -1, -1, -1, 1,  -3, -1, -1, -4},
-                        {-2, -3, -3, -3, -2, -3, -3, -3, -1, 0,  0,  -3,
-                         0,  6,  -4, -2, -2, 1,  3,  -1, -3, -3, -1, -4},
-                        {-1, -2, -2, -1, -3, -1, -1, -2, -2, -3, -3, -1,
-                         -2, -4, 7,  -1, -1, -4, -3, -2, -2, -1, -2, -4},
-                        {1,  -1, 1,  0, -1, 0,  0,  0,  -1, -2, -2, 0,
-                         -1, -2, -1, 4, 1,  -3, -2, -2, 0,  0,  0,  -4},
-                        {0,  -1, 0,  -1, -1, -1, -1, -2, -2, -1, -1, -1,
-                         -1, -2, -1, 1,  5,  -2, -2, 0,  -1, -1, 0,  -4},
-                        {-3, -3, -4, -4, -2, -2, -3, -2, -2, -3, -2, -3,
-                         -1, 1,  -4, -3, -2, 11, 2,  -3, -4, -3, -2, -4},
-                        {-2, -2, -2, -3, -2, -1, -2, -3, 2,  -1, -1, -2,
-                         -1, 3,  -3, -2, -2, 2,  7,  -1, -3, -2, -1, -4},
-                        {0, -3, -3, -3, -1, -2, -2, -3, -3, 3,  1,  -2,
-                         1, -1, -2, -2, 0,  -3, -1, 4,  -3, -2, -1, -4},
-                        {-2, -1, 3,  4, -3, 0,  1,  -1, 0, -3, -4, 0,
-                         -3, -3, -2, 0, -1, -4, -3, -3, 4, 1,  -1, -4},
-                        {-1, 0,  0,  1, -3, 3,  4,  -2, 0, -3, -3, 1,
-                         -1, -3, -1, 0, -1, -3, -2, -2, 1, 4,  -1, -4},
-                        {0,  -1, -1, -1, -2, -1, -1, -1, -1, -1, -1, -1,
-                         -1, -1, -2, 0,  0,  -2, -1, -1, -1, -1, -1, -4},
-                        {-4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4,
-                         -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, -4, 1}};
-
-void runTest(int argc, char **argv)
+template <typename... Args> bool ensure_compatibility(const Args &...args)
 {
+    std::vector<dpctl::tensor::usm_ndarray> arrays = {args...};
 
-    // sycl::device_ext &dev_ct1 = sycl::get_current_device();
+    auto arr = arrays.at(0);
+    auto q = arr.get_queue();
+    auto type_flag = arr.get_typenum();
+    auto arr_size = arr.get_size();
+
+    for (auto &arr : arrays) {
+        if (!(arr.get_flags() & (USM_ARRAY_C_CONTIGUOUS))) {
+            std::cerr << "All arrays need to be C contiguous.\n";
+            return false;
+        }
+        if (arr.get_typenum() != type_flag) {
+            std::cerr << "All arrays should be of same elemental type.\n";
+            return false;
+        }
+        if (arr.get_ndim() > 1) {
+            std::cerr << "All arrays expected to be single-dimensional.\n";
+            return false;
+        }
+    }
+    return true;
+}
+
+void nw_sync(dpctl::tensor::usm_ndarray input_itemsets,
+             dpctl::tensor::usm_ndarray reference,
+             int max_rows,
+             int max_cols,
+             int penalty,
+             dpctl::tensor::usm_ndarray result)
+{
+    if (!ensure_compatibility(input_itemsets, reference, result))
+        throw std::runtime_error("Input arrays are not acceptable.");
+
     sycl::queue q_ct1;
 
-    int max_rows, max_cols, penalty;
-    int *input_itemsets, *output_itemsets, *referrence;
-    int *matrix_cuda, *referrence_cuda;
-    int size;
-
     // the lengths of the two sequences should be able to divided by 16.
-    // And at current stage  max_rows needs to equal max_cols
+    // And at current stage  max_rows needs to equal max_col
 
-    max_rows = atoi(argv[1]);
-    max_cols = atoi(argv[1]);
-    penalty = atoi(argv[2]);
-
-    max_rows = max_rows + 1;
-    max_cols = max_cols + 1;
-    referrence = (int *)malloc(max_rows * max_cols * sizeof(int));
-    input_itemsets = (int *)malloc(max_rows * max_cols * sizeof(int));
-    output_itemsets = (int *)malloc(max_rows * max_cols * sizeof(int));
-
-    srand(7);
-
-    for (int i = 0; i < max_cols; i++) {
-        for (int j = 0; j < max_rows; j++) {
-            input_itemsets[i * max_cols + j] = 0;
-        }
-    }
-
-    for (int i = 1; i < max_rows; i++) { // please define your own sequence.
-        input_itemsets[i * max_cols] = rand() % 10 + 1;
-    }
-    for (int j = 1; j < max_cols; j++) { // please define your own sequence.
-        input_itemsets[j] = rand() % 10 + 1;
-    }
-
-    for (int i = 1; i < max_cols; i++) {
-        for (int j = 1; j < max_rows; j++) {
-            referrence[i * max_cols + j] =
-                blosum62[input_itemsets[i * max_cols]][input_itemsets[j]];
-        }
-    }
-
-    for (int i = 1; i < max_rows; i++)
-        input_itemsets[i * max_cols] = -i * penalty;
-    for (int j = 1; j < max_cols; j++)
-        input_itemsets[j] = -j * penalty;
-
-    size = max_cols * max_rows;
-
-    referrence_cuda = sycl::malloc_device<int>(size, q_ct1);
-    matrix_cuda = sycl::malloc_device<int>(size, q_ct1);
-
-    q_ct1.memcpy(referrence_cuda, referrence, sizeof(int) * size).wait();
-    q_ct1.memcpy(matrix_cuda, input_itemsets, sizeof(int) * size).wait();
+    int size = max_cols * max_rows;
 
     sycl::range<3> dimGrid(1, 1, 1);
     sycl::range<3> dimBlock(1, 1, BLOCK_SIZE);
     int block_width = (max_cols - 1) / BLOCK_SIZE;
 
-    printf("Processing top-left matrix\n");
     // process top-left matrix
+    auto input_value = input_itemsets.get_data<int>();
+    auto reference_value = reference.get_data<int>();
+    auto result_value = result.get_data<int>();
 
     for (int i = 1; i <= block_width; i++) {
         dimGrid[2] = i;
@@ -136,14 +70,13 @@ void runTest(int argc, char **argv)
 
             cgh.parallel_for(sycl::nd_range<3>(dimGrid * dimBlock, dimBlock),
                              [=](sycl::nd_item<3> item_ct1) {
-                                 needle_cuda_shared_1(
-                                     referrence_cuda, matrix_cuda, max_cols,
+                                 needle_device_shared_1(
+                                     reference_value, input_value, max_cols,
                                      penalty, i, block_width, item_ct1,
                                      temp_acc_ct1, ref_acc_ct1);
                              });
         });
     }
-    printf("Processing bottom-right matrix\n");
     // process bottom-right matrix
     for (int i = block_width - 1; i >= 1; i--) {
         dimGrid[2] = i;
@@ -158,53 +91,48 @@ void runTest(int argc, char **argv)
 
             cgh.parallel_for(sycl::nd_range<3>(dimGrid * dimBlock, dimBlock),
                              [=](sycl::nd_item<3> item_ct1) {
-                                 needle_cuda_shared_2(
-                                     referrence_cuda, matrix_cuda, max_cols,
+                                 needle_device_shared_2(
+                                     reference_value, input_value, max_cols,
                                      penalty, i, block_width, item_ct1,
                                      temp_acc_ct1, ref_acc_ct1);
                              });
         });
     }
 
-    q_ct1.memcpy(output_itemsets, matrix_cuda, sizeof(int) * size).wait();
+    for (int i = max_rows - 2, j = max_rows - 2, k = 0; i >= 0 && j >= 0;) {
 
-    for (int i = max_rows - 2, j = max_rows - 2; i >= 0 && j >= 0;) {
         int nw = 0, n = 0, w = 0, traceback = 0;
-        if (i == max_rows - 2 && j == max_rows - 2)
-            fprintf(
-                fpo, "%d ",
-                output_itemsets[i * max_cols + j]); // print the first element
-        if (i == 0 && j == 0)
-            break;
+
         if (i > 0 && j > 0) {
-            nw = output_itemsets[(i - 1) * max_cols + j - 1];
-            w = output_itemsets[i * max_cols + j - 1];
-            n = output_itemsets[(i - 1) * max_cols + j];
+            nw = input_value[(i - 1) * max_cols + j - 1];
+            w = input_value[i * max_cols + j - 1];
+            n = input_value[(i - 1) * max_cols + j];
         }
         else if (i == 0) {
             nw = n = LIMIT;
-            w = output_itemsets[i * max_cols + j - 1];
-        }
-        else if (j == 0) {
-            nw = w = LIMIT;
-            n = output_itemsets[(i - 1) * max_cols + j];
+            w = input_value[i * max_cols + j - 1];
         }
         else {
+            nw = w = LIMIT;
+            n = input_value[(i - 1) * max_cols + j];
         }
 
-        // traceback = maximum(nw, w, n);
         int new_nw, new_w, new_n;
-        new_nw = nw + referrence[i * max_cols + j];
+        new_nw = nw + reference_value[i * max_cols + j];
         new_w = w - penalty;
         new_n = n - penalty;
 
         traceback = maximum(new_nw, new_w, new_n);
+
         if (traceback == new_nw)
             traceback = nw;
         if (traceback == new_w)
             traceback = w;
         if (traceback == new_n)
             traceback = n;
+
+        result_value[k] = traceback;
+        k++;
 
         if (traceback == nw) {
             i--;
@@ -215,15 +143,22 @@ void runTest(int argc, char **argv)
             j--;
             continue;
         }
-        else if (traceback == n) {
+        else {
             i--;
             continue;
         }
-        else
-            ;
     }
+    std::cout << "Inside 3\n";
+    for (int i = 0; i < 16; i++)
+        std::cout << result_value[i] << " ";
+}
 
-    free(referrence);
-    free(input_itemsets);
-    free(output_itemsets);
+PYBIND11_MODULE(_nw_sycl, m)
+{
+    // Import the dpctl extensions
+    import_dpctl();
+
+    m.def("nw", &nw_sync, "DPC++ implementation of the needleman-wunsch",
+          py::arg("input_itemsets"), py::arg("reference"), py::arg("max_rows"),
+          py::arg("max_cols"), py::arg("penalty"), py::arg("result"));
 }
