@@ -13,6 +13,7 @@ domain = "Sequence Matching"
 input_args = [
     "input_itemsets",
     "reference",
+    "output_datasets",
     "max_rows",
     "max_cols",
     "penalty",
@@ -20,6 +21,7 @@ input_args = [
 ]
 array_args = [
     "input_itemsets",
+    "output_datasets",
     "reference",
     "result",
 ]
@@ -60,6 +62,7 @@ input_args = [
 output_args = [
     "input_itemsets",
     "reference",
+    "output_datasets",
     "max_rows",
     "max_cols",
     "result"

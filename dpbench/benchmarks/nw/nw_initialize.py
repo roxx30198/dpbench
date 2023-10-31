@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 INT_MAX = 2147483647
-
 blosum62 = [
     [
         4,
@@ -642,6 +641,7 @@ def initialize(grid_size, penalty, seed, types_dict=None):
     max_rows, max_cols = grid_size + 1, grid_size + 1
     input_itemsets = np.empty((max_rows * max_cols), dtype=dtype)
     reference = np.zeros((max_rows * max_cols), dtype=dtype)
+    output_datasets = np.zeros((max_rows * max_cols), dtype=dtype)
     result = np.empty(grid_size, dtype=dtype)
 
     for i in range(max_cols):
@@ -667,7 +667,11 @@ def initialize(grid_size, penalty, seed, types_dict=None):
     for j in range(1, max_cols):
         input_itemsets[j] = -j * penalty
 
-    return (input_itemsets, reference, max_rows, max_cols, result)
-
-
-# print(initialize(16,4,7))
+    return (
+        input_itemsets,
+        reference,
+        output_datasets,
+        max_rows,
+        max_cols,
+        result,
+    )
