@@ -635,14 +635,14 @@ def initialize(grid_size, penalty, seed, types_dict=None):
     import numpy as np
     import numpy.random as rand
 
-    dtype = types_dict["int"]
-    # dtype = np.int16
+    # dtype = types_dict["int"]
+    dtype = np.int64
 
     max_rows, max_cols = grid_size + 1, grid_size + 1
     input_itemsets = np.empty((max_rows * max_cols), dtype=dtype)
     reference = np.zeros((max_rows * max_cols), dtype=dtype)
     output_datasets = np.zeros((max_rows * max_cols), dtype=dtype)
-    result = np.empty(grid_size, dtype=dtype)
+    result = np.zeros(grid_size, dtype=dtype)
 
     for i in range(max_cols):
         for j in range(max_cols):

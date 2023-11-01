@@ -58,8 +58,10 @@ void nw_sync(dpctl::tensor::usm_ndarray input_itemsets,
     auto reference_value = reference.get_data<int>();
     auto out_value = output_datasets.get_data<int>();
     auto result_value = result.get_data<int>();
-
-    for (int i = 0; i <= block_width; i++) {
+    int c = 1;
+    std::cout << "block_widhth " << block_width << "\n";
+    for (int i = 1; i <= block_width; i++) {
+        std::cout << "Inside kernel 1 " << c++ << "\n";
         dimGrid[2] = i;
         dimGrid[1] = 1;
 
@@ -79,8 +81,10 @@ void nw_sync(dpctl::tensor::usm_ndarray input_itemsets,
                              });
         });
     }
+    c = 1;
     // process bottom-right matrix
     for (int i = block_width - 1; i >= 1; i--) {
+        std::cout << "Inside kernel 2 " << c++ << "\n";
 
         dimGrid[2] = i;
         dimGrid[1] = 1;
@@ -102,6 +106,14 @@ void nw_sync(dpctl::tensor::usm_ndarray input_itemsets,
         });
     }
     q_ct1.memcpy(out_value, input_value, sizeof(int) * size).wait();
+
+    for (int i = 0; i < max_rows; i++) {
+        for (int j = 0; j < max_cols; j++) {
+            std::cout << input_value[i * max_cols + j] << " ";
+        }
+        std::cout << "\n";
+    }
+    std::cout << "\n\n";
 
     for (int i = max_rows - 2, j = max_rows - 2, k = 0; i >= 0 && j >= 0;) {
 
@@ -154,6 +166,7 @@ void nw_sync(dpctl::tensor::usm_ndarray input_itemsets,
     }
     for (int i = 0; i < 16; i++)
         std::cout << result_value[i] << " ";
+    std::cout << "\n";
 }
 
 PYBIND11_MODULE(_nw_sycl, m)
