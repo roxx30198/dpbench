@@ -2,12 +2,10 @@
 # #
 # # SPDX-License-Identifier: Apache-2.0
 
-# import dpnp
 # import numba_dpex
-
 # BLOCK_SIZE = 16
-# LIMIT = -999
 
+# LIMIT = -999
 
 # @numba_dpex.func()
 # def maximum(a, b, c):
@@ -17,7 +15,12 @@
 
 
 # @numba_dpex.kernel()
-# def neddle_kernel_1(reference, input_itemsets, cols, penalty, i, temp, ref):
+# def neddle_kernel_1(reference, input_itemsets, cols, penalty, i):
+#     dtype = reference.dtype
+
+#     temp = numba_dpex.private.array(shape=(17,17), dtype=dtype)
+#     ref = numba_dpex.private.array(shape=(BLOCK_SIZE, BLOCK_SIZE), dtype=dtype)
+
 #     bx = numba_dpex.get_group_id(2)
 #     tx = numba_dpex.get_local_id(2)
 
@@ -79,8 +82,12 @@
 
 # @numba_dpex.kernel()
 # def neddle_kernel_2(
-#     reference, input_itemsets, cols, penalty, i, block_width, temp, ref
+#     reference, input_itemsets, cols, penalty, i, block_width
 # ):
+#     dtype = reference.dtype
+#     temp = numba_dpex.private.array(shape=(17,17), dtype=dtype)
+#     ref = numba_dpex.private.array(shape=(BLOCK_SIZE, BLOCK_SIZE), dtype=dtype)
+
 #     bx = numba_dpex.get_group_id(2)
 #     tx = numba_dpex.get_local_id(2)
 
@@ -153,23 +160,18 @@
 #     block_width = int((max_cols - 1) / BLOCK_SIZE)
 #     # process top-left matrix
 #     k_count_1 = 1
-#     temp_1 = dpnp.array((BLOCK_SIZE + 1, BLOCK_SIZE + 1), dtype=dpnp.int64)
-#     ref_1 = dpnp.array((BLOCK_SIZE, BLOCK_SIZE), dtype=dpnp.int64)
 
 #     for i in range(1, block_width + 1):
-#         print("kernel 1 ", k_count_1)
 #         k_count_1 += 1
 #         dimGrid = numba_dpex.Range(1, 1, i * BLOCK_SIZE)
 
 #         neddle_kernel_1[numba_dpex.NdRange(dimGrid, dimBlock)](
-#             reference, input_itemsets, max_cols, penalty, i, temp_1, ref_1
+#             reference, input_itemsets, max_cols, penalty, i
 #         )
 #     k_count_2 = 1
-#     temp_2 = dpnp.array((BLOCK_SIZE + 1, BLOCK_SIZE + 1), dtype=dpnp.int64)
-#     ref_2 = dpnp.array((BLOCK_SIZE, BLOCK_SIZE), dtype=dpnp.int64)
+
 #     # process bottom-right matrix
 #     for i in range(block_width - 1, 0, -1):
-#         print("kernel 2 ", k_count_2)
 #         k_count_2 += 1
 #         dimGrid = numba_dpex.Range(1, 1, i * BLOCK_SIZE)
 
@@ -180,19 +182,14 @@
 #             penalty,
 #             i,
 #             block_width,
-#             temp_2,
-#             ref_2,
 #         )
 
 #     output_datasets = input_itemsets
 #     # print(input_itemsets)
 #     i, j = max_rows - 2, max_rows - 2
 #     k = 0
-#     while True:
+#     while (i >=0  and j >=0):
 #         nw, n, w, traceback = 0, 0, 0, 0
-
-#         if i == 0 and j == 0:
-#             break
 
 #         if i > 0 and j > 0:
 #             nw = output_datasets[(i - 1) * max_cols + j - 1]
@@ -206,6 +203,9 @@
 #         elif j == 0:
 #             nw = w = LIMIT
 #             n = output_datasets[(i - 1) * max_cols + j]
+
+#         else:
+#             break
 
 #         new_nw = nw + reference[i * max_cols + j]
 #         new_w = w - penalty
@@ -232,7 +232,7 @@
 #             continue
 #         i -= 1
 
-#     # print(result)
+#     print(result)
 
 
 # # from nw_initialize import initialize

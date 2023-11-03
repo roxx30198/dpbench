@@ -107,14 +107,6 @@ void nw_sync(dpctl::tensor::usm_ndarray input_itemsets,
     }
     q_ct1.memcpy(out_value, input_value, sizeof(int) * size).wait();
 
-    for (int i = 0; i < max_rows; i++) {
-        for (int j = 0; j < max_cols; j++) {
-            std::cout << input_value[i * max_cols + j] << " ";
-        }
-        std::cout << "\n";
-    }
-    std::cout << "\n\n";
-
     for (int i = max_rows - 2, j = max_rows - 2, k = 0; i >= 0 && j >= 0;) {
 
         int nw = 0, n = 0, w = 0, traceback = 0;
@@ -164,9 +156,13 @@ void nw_sync(dpctl::tensor::usm_ndarray input_itemsets,
             continue;
         }
     }
-    for (int i = 0; i < 16; i++)
-        std::cout << result_value[i] << " ";
-    std::cout << "\n";
+    for (int i = 0; i < max_rows; i++) {
+        for (int j = 0; j < max_cols; j++) {
+            std::cout << result_value[i * max_cols + j] << " ";
+        }
+        std::cout << "\n";
+    }
+    std::cout << "\n\n";
 }
 
 PYBIND11_MODULE(_nw_sycl, m)
