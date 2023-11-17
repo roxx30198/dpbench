@@ -1,0 +1,58 @@
+# SPDX-FileCopyrightText: 2022 - 2023 Intel Corporation
+#
+# SPDX-License-Identifier: Apache-2.0
+
+[benchmark]
+name = "Hotspot Computation"
+short_name = "hotspot"
+relative_path = "hotspot"
+module_name = "hotspot"
+func_name = "hotspot"
+kind = "microbenchmark"
+domain = "Hotspot Compute"
+input_args = [
+    "temperature",
+    "power",
+    "rows",
+    "cols",
+    "result",
+]
+array_args = [
+    "temperature",
+    "power",
+    "result",
+]
+output_args = [
+    "result",
+]
+
+[benchmark.parameters.S]
+rows = 10
+cols = 10
+
+[benchmark.parameters.M16Gb]
+rows = 10
+cols = 10
+
+[benchmark.parameters.M]
+rows = 10
+cols = 10
+
+[benchmark.parameters.L]
+rows = 10
+cols = 10
+
+[benchmark.init]
+func_name = "initialize"
+types_dict_name="types_dict"
+precision="double"
+input_args = [
+    "rows",
+    "cols",
+    "types_dict",
+]
+output_args = [
+    "temperature",
+    "power",
+    "result",
+]
