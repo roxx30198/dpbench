@@ -199,21 +199,27 @@ def generate_performance_report(
         .where(dm.Result.run_id == run_id)
     )
 
-    df = pd.read_sql_query(
-        sql=sql,
-        con=conn.connect(),
+    NA = "n/a"
+
+    df = (
+        pd.read_sql_query(sql=sql, con=conn.connect())
+        .astype({impl: "string" for impl in implementations})
+        .replace("0.0", NA)
+        .fillna(NA)
     )
 
     for index, row in df.iterrows():
         for impl in implementations:
             time = row[impl]
-            if time:
-                NANOSECONDS_IN_MILISECONDS: Final[float] = 1000 * 1000.0
-                time /= NANOSECONDS_IN_MILISECONDS
 
-                time = str(round(time, 2)) + "ms"
-            else:
-                time = "n/a"
+            if time == NA:
+                continue
+
+            NANOSECONDS_IN_MILISECONDS: Final[float] = 1000 * 1000.0
+            time = float(time)
+            time /= NANOSECONDS_IN_MILISECONDS
+
+            time = str(round(time, 2)) + "ms"
 
             df.at[index, impl] = time
 
