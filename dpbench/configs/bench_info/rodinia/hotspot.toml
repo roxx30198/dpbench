@@ -54,5 +54,5 @@ input_args = [
 output_args = [
     "temperature",
     "power",
-    "result",
+    "result"
 ]

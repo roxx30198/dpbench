@@ -33,10 +33,13 @@ void calculate_temp(int iteration,   // number of iteration
     float amb_temp = 80.0;
     float step_div_Cap;
     float Rx_1, Ry_1, Rz_1;
+
     int bx = item_ct1.get_group(2);
     int by = item_ct1.get_group(1);
+
     int tx = item_ct1.get_local_id(2);
     int ty = item_ct1.get_local_id(1);
+
     step_div_Cap = step / Cap;
 
     Rx_1 = 1 / Rx;

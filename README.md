@@ -146,7 +146,7 @@ SPDX-License-Identifier: Apache-2.0
     ```
 
     ```
-    usage: dpbench run [-h] [-p [{S,M,L}]] [-s | --validate | --no-validate] [--dpbench | --no-dpbench] [--npbench | --no-npbench] [--polybench | --no-polybench] [-r [REPEAT]] [-t [TIMEOUT]]
+    usage: dpbench run [-h] [-p [{S,M,L}]] [-s | --validate | --no-validate] [--dpbench | --no-dpbench] [--npbench | --no-npbench] [--polybench | --no-polybench] [--rodinia | --no-rodinia] [-r [REPEAT]] [-t [TIMEOUT]]
                     [--precision [{single,double}]] [--print-results | --no-print-results] [--save | --no-save] [--sycl-device [SYCL_DEVICE]]
                     [--skip-expected-failures | --no-skip-expected-failures]
 
@@ -164,6 +164,8 @@ SPDX-License-Identifier: Apache-2.0
                             Set if run npbench benchmarks. (default: False)
     --polybench, --no-polybench
                             Set if run polybench benchmarks. (default: False)
+    --rodinia, --no-polybench
+                            Set if run rodinia benchmarks. (default: False)
     -r [REPEAT], --repeat [REPEAT]
                             Number of repeats for each benchmark.
     -t [TIMEOUT], --timeout [TIMEOUT]
